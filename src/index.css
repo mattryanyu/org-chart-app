@@ -14,3 +14,10 @@
     @apply font-sans text-gray-900;
   }
 }
+
+/* Prevent iOS Safari from zooming on input focus (triggered when font-size < 16px) */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}

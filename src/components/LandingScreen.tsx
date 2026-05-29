@@ -37,6 +37,26 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
   const desktopMenuRef = useRef<HTMLDivElement>(null)
   const importRef = useRef<HTMLInputElement>(null)
 
+  // Lock body scroll when a text-input modal is open to prevent iOS Safari
+  // from scrolling the background page when the keyboard appears, which
+  // leaves the viewport offset after the modal closes.
+  useEffect(() => {
+    const isOpen = !!(renamingChart || showNewChartModal)
+    if (!isOpen) return
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      document.body.style.overflow = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [renamingChart, showNewChartModal])
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as HTMLElement)) {
