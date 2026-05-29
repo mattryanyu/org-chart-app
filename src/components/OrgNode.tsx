@@ -93,7 +93,7 @@ export function OrgNode({ id, data, selected }: NodeProps & { data: OrgNodeData 
             />
           ) : (
             <div
-              className={`${avatarClass} bg-blue-500 flex items-center justify-center text-white font-semibold text-sm cursor-pointer`}
+              className={`${avatarClass} bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm cursor-pointer`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}

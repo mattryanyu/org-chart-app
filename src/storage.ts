@@ -104,6 +104,15 @@ export function exportSingleChart(id: string): BackupData | null {
   }
 }
 
+export function resetAllData(): void {
+  const index = getChartIndex()
+  for (const chart of index) {
+    localStorage.removeItem(`org-chart-${chart.id}`)
+  }
+  localStorage.removeItem(INDEX_KEY)
+  localStorage.removeItem(ACTIVE_KEY)
+}
+
 export function importBackup(backup: BackupData): void {
   const existingIndex = getChartIndex()
   const existingIds = new Set(existingIndex.map((c) => c.id))
@@ -146,7 +155,7 @@ export function initStorage(
     }
   } catch { /* ignore */ }
 
-  const chart = createChart('My Org Chart')
+  const chart = createChart('Wizarding World Inc')
   saveChartData(chart.id, nodes, edges)
   return { chart, nodes, edges }
 }

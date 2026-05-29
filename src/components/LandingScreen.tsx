@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { getChartIndex, deleteChart, exportAllCharts, exportSingleChart, importBackup, type ChartMeta } from '../storage'
+import { getChartIndex, deleteChart, renameChart, exportAllCharts, exportSingleChart, importBackup, resetAllData, initStorage, type ChartMeta } from '../storage'
+import { initialNodes, initialEdges } from '../initialData'
 
 interface Props {
   onOpen: (id: string) => void
-  onCreate: () => void
+  onCreate: (name: string) => void
 }
 
 const ACCENT = 'from-indigo-500 to-violet-600'
@@ -11,13 +12,41 @@ const ACCENT = 'from-indigo-500 to-violet-600'
 export function LandingScreen({ onOpen, onCreate }: Props) {
   const [charts, setCharts] = useState<ChartMeta[]>(() => getChartIndex())
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
+  const [showResetModal, setShowResetModal] = useState(false)
+  const [showNewChartModal, setShowNewChartModal] = useState(false)
+  const [newChartName, setNewChartName] = useState('')
+
+  const DEFAULT_CHART_NAME = 'New Chart'
+
+  const openNewChartModal = () => {
+    setNewChartName(DEFAULT_CHART_NAME)
+    setShowNewChartModal(true)
+  }
+
+  const handleCreateChart = (name: string) => {
+    setShowNewChartModal(false)
+    onCreate(name.trim() || DEFAULT_CHART_NAME)
+  }
+  const [renamingChart, setRenamingChart] = useState<ChartMeta | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [deletingChart, setDeletingChart] = useState<ChartMeta | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const desktopMenuRef = useRef<HTMLDivElement>(null)
   const importRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as HTMLElement)) {
         setMenuOpenId(null)
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as HTMLElement)) {
+        setMobileMenuOpen(false)
+      }
+      if (desktopMenuRef.current && !desktopMenuRef.current.contains(e.target as HTMLElement)) {
+        setDesktopMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -27,9 +56,14 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
   const handleDelete = (e: React.MouseEvent, chart: ChartMeta) => {
     e.stopPropagation()
     setMenuOpenId(null)
-    if (!window.confirm(`Delete "${chart.name}"? This cannot be undone.`)) return
-    deleteChart(chart.id)
+    setDeletingChart(chart)
+  }
+
+  const confirmDelete = () => {
+    if (!deletingChart) return
+    deleteChart(deletingChart.id)
     setCharts(getChartIndex())
+    setDeletingChart(null)
   }
 
   const downloadJson = (data: object, filename: string) => {
@@ -52,6 +86,20 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
     setMenuOpenId(null)
     const backup = exportSingleChart(chart.id)
     if (backup) downloadJson(backup, `${chart.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.json`)
+  }
+
+  const handleRenameSubmit = () => {
+    if (!renamingChart || !renameValue.trim()) return
+    renameChart(renamingChart.id, renameValue.trim())
+    setCharts(getChartIndex())
+    setRenamingChart(null)
+  }
+
+  const handleReset = () => {
+    resetAllData()
+    initStorage(initialNodes, initialEdges)
+    setCharts(getChartIndex())
+    setShowResetModal(false)
   }
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,10 +142,12 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+
+          {/* Desktop: Export + Import buttons */}
           {charts.length > 0 && (
             <button
               onClick={handleExportAll}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                 <path d="M6.5 1v7M3.5 5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -108,7 +158,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
           )}
           <button
             onClick={() => importRef.current?.click()}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
               <path d="M6.5 9V2M3.5 5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -116,8 +166,78 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
             </svg>
             Import
           </button>
+
+          {/* Desktop: "..." overflow menu (Reset only) */}
+          <div ref={desktopMenuRef} className="relative hidden sm:block">
+            <button
+              onClick={() => setDesktopMenuOpen((o) => !o)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors text-lg leading-none"
+            >
+              ···
+            </button>
+            {desktopMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                <button
+                  onClick={() => { setDesktopMenuOpen(false); setShowResetModal(true) }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
+                >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M2 2l9 9M11 2l-9 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  Reset
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile: "..." overflow menu */}
+          <div ref={mobileMenuRef} className="relative sm:hidden">
+            <button
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors text-lg leading-none"
+            >
+              ···
+            </button>
+            {mobileMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                {charts.length > 0 && (
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); handleExportAll() }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M6.5 1v7M3.5 5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 9.5v1A1.5 1.5 0 002.5 12h8a1.5 1.5 0 001.5-1.5v-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                    Export
+                  </button>
+                )}
+                <button
+                  onClick={() => { setMobileMenuOpen(false); importRef.current?.click() }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M6.5 9V2M3.5 5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 9.5v1A1.5 1.5 0 002.5 12h8a1.5 1.5 0 001.5-1.5v-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  Import
+                </button>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  onClick={() => { setMobileMenuOpen(false); setShowResetModal(true) }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
+                >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M2 2l9 9M11 2l-9 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  Reset
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
-            onClick={onCreate}
+            onClick={openNewChartModal}
             className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
           >
             <span className="text-base leading-none">+</span> New Chart
@@ -134,7 +254,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
           </span>
         </h1>
         <p className="mt-5 text-lg text-gray-500 max-w-lg leading-relaxed">
-          Build clear, navigable org charts. Add people, connect teams, and share your structure with anyone.
+          Build clean, easy-to-use org charts. Add people, connect teams, and share your structure with anyone.
         </p>
       </div>
 
@@ -161,7 +281,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
               <p className="text-sm text-gray-500 mt-1">Create your first org chart to get started.</p>
             </div>
             <button
-              onClick={onCreate}
+              onClick={openNewChartModal}
               className="mt-2 px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
             >
               Create your first chart
@@ -183,12 +303,18 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
                 >
                   <button
                     onClick={() => setMenuOpenId(menuOpenId === chart.id ? null : chart.id)}
-                    className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100 text-lg leading-none"
+                    className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors text-lg leading-none"
                   >
                     ···
                   </button>
                   {menuOpenId === chart.id && (
                     <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setMenuOpenId(null); setRenamingChart(chart); setRenameValue(chart.name) }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        Rename chart
+                      </button>
                       <button
                         onClick={(e) => handleExportChart(e, chart)}
                         className="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -221,6 +347,127 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
           </div>
         )}
       </div>
+      {/* Delete chart modal */}
+      {deletingChart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900">Delete chart?</h2>
+            <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+              <span className="font-medium text-gray-700">"{deletingChart.name}"</span> will be permanently deleted. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setDeletingChart(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New chart modal */}
+      {showNewChartModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900">Name your chart</h2>
+            <input
+              autoFocus
+              type="text"
+              value={newChartName}
+              onChange={(e) => setNewChartName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateChart(newChartName); if (e.key === 'Escape') setShowNewChartModal(false) }}
+              className="mt-4 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <div className="mt-4 flex gap-3 justify-end">
+              <button
+                onClick={() => setShowNewChartModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleCreateChart(DEFAULT_CHART_NAME)}
+                className="px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => handleCreateChart(newChartName)}
+                disabled={!newChartName.trim()}
+                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rename modal */}
+      {renamingChart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900">Rename chart</h2>
+            <input
+              autoFocus
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleRenameSubmit(); if (e.key === 'Escape') setRenamingChart(null) }}
+              className="mt-4 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <div className="mt-4 flex gap-3 justify-end">
+              <button
+                onClick={() => setRenamingChart(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRenameSubmit}
+                disabled={!renameValue.trim()}
+                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40"
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset confirmation modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-900">Reset all data?</h2>
+            <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+              All org charts and data will be permanently deleted. This cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

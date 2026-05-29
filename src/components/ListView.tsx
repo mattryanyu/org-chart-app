@@ -99,7 +99,7 @@ export function ListView({ nodes, onUpdate }: Props) {
       )}
 
       {/* Header */}
-      <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_1fr_auto] gap-4 px-4 mb-2">
+      <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_1fr_72px] gap-4 px-4 mb-2">
         {['Name', 'Title', 'Department', 'Location'].map((h) => (
           <span key={h} className="text-xs font-semibold text-gray-400 uppercase tracking-widest">{h}</span>
         ))}
@@ -178,7 +178,7 @@ export function ListView({ nodes, onUpdate }: Props) {
           return (
             <div
               key={node.id}
-              className="group flex items-center gap-4 sm:grid sm:grid-cols-[2fr_1.5fr_1.5fr_1fr_auto] bg-white rounded-xl border border-gray-100 px-4 py-3 hover:border-indigo-100 hover:shadow-sm transition-all duration-150"
+              className="group flex items-center gap-4 sm:grid sm:grid-cols-[2fr_1.5fr_1.5fr_1fr_72px] bg-white rounded-xl border border-gray-100 px-4 py-3 hover:border-indigo-100 hover:shadow-sm transition-all duration-150"
             >
               {/* Name + avatar */}
               <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-none">

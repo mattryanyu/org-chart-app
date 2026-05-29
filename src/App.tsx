@@ -73,6 +73,7 @@ export default function App() {
   const [renameValue, setRenameValue] = useState('')
   const [showDeletePersonModal, setShowDeletePersonModal] = useState(false)
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
+  const [showMobileStats, setShowMobileStats] = useState(false)
   const deleteMenuRef = useRef<HTMLDivElement>(null)
 
   // Close delete menu on outside click or when selection changes
@@ -182,8 +183,8 @@ export default function App() {
     setSelectedNode(node.id)
   }
 
-  const handleNewChart = () => {
-    const chart = createChart('New Chart')
+  const handleNewChart = (name: string) => {
+    const chart = createChart(name)
     setActiveChartId(chart.id)
     setChartName(chart.name)
     setNodes([])
@@ -202,10 +203,11 @@ export default function App() {
     const loadedEdges = (data?.edges ?? []) as Edge[]
     const needsCollapse = loadedNodes.every((n) => (n.data as OrgNodeData).collapsed === undefined)
     const withCollapse = needsCollapse ? autoCollapseDeep(loadedNodes, loadedEdges) : loadedNodes
-    setNodes(applyVisibility(withCollapse, loadedEdges))
+    const visible = applyVisibility(withCollapse, loadedEdges)
+    setNodes(getAutoLayout(visible, loadedEdges))
     setEdges(loadedEdges)
     setSelectedNode(null)
-    setTimeout(() => fitView({ duration: 300 }), 50)
+    setTimeout(() => fitViewRef.current({ duration: 300 }), 50)
   }
 
   const handleRename = (name: string) => {
@@ -229,7 +231,7 @@ export default function App() {
     return (
       <LandingScreen
         onOpen={(id) => { handleSwitchChart(id); setView('editor') }}
-        onCreate={() => { handleNewChart(); setView('editor') }}
+        onCreate={(name) => { handleNewChart(name); setView('editor') }}
       />
     )
   }
@@ -329,7 +331,7 @@ export default function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-          onNodeClick={(_, node) => setSelectedNode(node.id)}
+          onNodeClick={(_, node) => { setSelectedNode(node.id); setShowMobileStats(false) }}
           onPaneClick={() => setSelectedNode(null)}
           onNodeDrag={onNodeDrag}
           onNodeDragStop={onNodeDragStop}
@@ -338,6 +340,23 @@ export default function App() {
           <Controls />
           <MiniMap />
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+
+          {/* Mobile stats pill */}
+          {!selectedNode && (
+            <Panel position="bottom-right" className="sm:hidden mb-2 mr-2">
+              <button
+                onClick={() => setShowMobileStats(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-200 rounded-full shadow-md text-sm font-medium text-gray-700"
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="5" cy="4.5" r="2" stroke="currentColor" strokeWidth="1.3"/>
+                  <path d="M1 12c0-2.2 1.8-4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  <path d="M9 7.5v3M7.5 9h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                </svg>
+                {nodes.length} people
+              </button>
+            </Panel>
+          )}
 
           {/* Node tools toolbar */}
           <Panel position="top-left" className="flex gap-1">
@@ -361,11 +380,10 @@ export default function App() {
                 },
                 icon: (
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <rect x="5.5" y="1" width="4" height="3" rx="0.8" fill="currentColor"/>
-                    <rect x="1" y="11" width="4" height="3" rx="0.8" fill="currentColor"/>
-                    <rect x="10" y="11" width="4" height="3" rx="0.8" fill="currentColor"/>
-                    <path d="M7.5 4V6.5M3 11V9.5H12V11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                    <path d="M10 4.5l1.5-1.5 1.5 1.5M11.5 3v3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 13L8.5 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                    <path d="M10.5 2.5L11 4 12.5 4.5 11 5 10.5 6.5 10 5 8.5 4.5 10 4Z" fill="currentColor"/>
+                    <path d="M5 1.5l.3.9.9.3-.9.3L5 4l-.3-.9-.9-.3.9-.3Z" fill="currentColor" opacity="0.7"/>
+                    <path d="M13.5 9l.25.75.75.25-.75.25L13.5 11l-.25-.75-.75-.25.75-.25Z" fill="currentColor" opacity="0.7"/>
                   </svg>
                 ),
               },
@@ -430,8 +448,8 @@ export default function App() {
           </div>
         ))
 
-        return (
-          <div className="w-72 bg-white border-l border-gray-200 p-5 flex flex-col gap-5 shadow-lg overflow-y-auto">
+        const statsContent = (
+          <>
             <div>
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Total</p>
               <p className="text-3xl font-bold text-gray-800">{nodes.length}
@@ -452,7 +470,37 @@ export default function App() {
                 {renderRows(departmentRows, 'bg-violet-400')}
               </div>
             </div>
-          </div>
+          </>
+        )
+
+        return (
+          <>
+            {/* Desktop: right panel */}
+            <div className="hidden sm:flex w-72 bg-white border-l border-gray-200 p-5 flex-col gap-5 shadow-lg overflow-y-auto">
+              {statsContent}
+            </div>
+
+            {/* Mobile: bottom sheet */}
+            {showMobileStats && (
+              <div className="sm:hidden fixed inset-0 z-50 flex flex-col justify-end">
+                <div className="absolute inset-0 bg-black/30" onClick={() => setShowMobileStats(false)} />
+                <div className="relative bg-white rounded-t-2xl shadow-2xl p-5 flex flex-col gap-5 max-h-[70vh] overflow-y-auto">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-700">Stats</p>
+                    <button
+                      onClick={() => setShowMobileStats(false)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                  {statsContent}
+                </div>
+              </div>
+            )}
+          </>
         )
       })()}
 
@@ -501,7 +549,7 @@ export default function App() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                   {String(selectedNodeData.name).split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
                 </div>
                 <p className="text-sm text-gray-400 italic">Drop an image onto the card to set a picture.</p>
