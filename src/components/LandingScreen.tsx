@@ -393,13 +393,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
               >
                 Cancel
               </button>
-              <button
-                onClick={() => handleCreateChart(DEFAULT_CHART_NAME)}
-                className="px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                Skip
-              </button>
-              <button
+<button
                 onClick={() => handleCreateChart(newChartName)}
                 disabled={!newChartName.trim()}
                 className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40"
