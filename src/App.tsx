@@ -254,7 +254,7 @@ export default function App() {
 
   return (
     <DropTargetContext.Provider value={dropTargetId}>
-    <div className="flex flex-col h-[100dvh] w-screen bg-gray-50 pb-[env(safe-area-inset-bottom)]">
+    <div className="flex flex-col h-[100dvh] w-full overflow-x-hidden bg-gray-50 pb-[env(safe-area-inset-bottom)]">
 
       {/* Top toolbar — always visible */}
       <div className="shrink-0 flex items-center px-4 py-2 bg-white border-b border-gray-200 shadow-sm">

@@ -145,10 +145,10 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-white flex flex-col pb-[env(safe-area-inset-bottom)]">
+    <div className="min-h-[100dvh] bg-white flex flex-col pb-[env(safe-area-inset-bottom)] overflow-x-hidden">
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 sm:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-white">
@@ -266,7 +266,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
       </nav>
 
       {/* Hero */}
-      <div className="max-w-5xl w-full mx-auto px-8 pt-20 pb-14">
+      <div className="max-w-5xl w-full mx-auto px-4 sm:px-8 pt-20 pb-14">
         <h1 className="text-6xl font-extrabold tracking-tight leading-[1.08] text-gray-950">
           Your organization,<br />
           <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
@@ -279,7 +279,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
       </div>
 
       {/* Charts */}
-      <div className="max-w-5xl w-full mx-auto px-8 pb-24">
+      <div className="max-w-5xl w-full mx-auto px-4 sm:px-8 pb-12">
         {charts.length > 0 && (
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6">
             Your charts
@@ -366,9 +366,8 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
             ))}
           </div>
         )}
-      </div>
-      {/* Footer */}
-      <footer className="mt-auto py-5 flex items-center justify-center border-t border-gray-100">
+        {/* Footer */}
+        <footer className="mt-10 pt-6 border-t border-gray-100 flex items-center justify-center">
         <a
           href="https://mattryanyu.github.io/"
           target="_blank"
@@ -382,7 +381,8 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
           </svg>
           <span className="text-sm text-gray-600">Matt Yu</span>
         </a>
-      </footer>
+        </footer>
+      </div>
 
       {/* Delete chart modal */}
       {deletingChart && (

@@ -9,9 +9,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
   body {
     @apply font-sans text-gray-900;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 }
 
