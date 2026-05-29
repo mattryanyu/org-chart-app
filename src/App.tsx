@@ -246,8 +246,8 @@ export default function App() {
   if (view === 'landing') {
     return (
       <LandingScreen
-        onOpen={(id) => { handleSwitchChart(id); setView('editor') }}
-        onCreate={(name) => { handleNewChart(name); setView('editor') }}
+        onOpen={(id) => { handleSwitchChart(id); setView('editor'); window.scrollTo(0, 0) }}
+        onCreate={(name) => { handleNewChart(name); setView('editor'); window.scrollTo(0, 0) }}
       />
     )
   }
@@ -323,7 +323,7 @@ export default function App() {
         <div className="flex-1 flex items-center justify-end">
           <div className="relative group/tip">
             <button
-              onClick={() => setView('landing')}
+              onClick={() => { setView('landing'); window.scrollTo(0, 0) }}
               aria-label="Close chart"
               className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
             >
