@@ -276,6 +276,23 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
         <p className="mt-5 text-lg text-gray-500 max-w-lg leading-relaxed">
           Build clean, easy-to-use org charts. Add people, connect teams, and share your structure with anyone.
         </p>
+        <a
+          href="https://mattryanyu.github.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group mt-4 inline-flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <span className="text-xs">Built with Claude Code by</span>
+          <svg width="14" height="14" viewBox="1869 468 1026 1026" xmlns="http://www.w3.org/2000/svg" overflow="hidden">
+            <path d="M2704.76 979.931C2701.56 979.931 2697.28 979.931 2694.07 979.931 2694.07 979.931 2694.07 979.931 2694.07 979.931 2694.07 927.562 2668.43 879.469 2626.74 849.544 2583.99 819.619 2529.49 812.137 2480.33 829.237 2439.71 750.15 2349.94 709.537 2264.44 729.844 2178.94 750.15 2116.95 827.1 2116.95 915.806 2116.95 915.806 2116.95 916.875 2116.95 917.944 2058.17 908.325 1999.39 932.906 1963.05 979.931 1927.78 1028.02 1921.37 1091.08 1945.95 1144.52 1971.6 1197.96 2025.04 1233.22 2083.82 1236.43L2083.82 1237.5 2703.69 1237.5C2774.23 1237.5 2831.94 1179.79 2831.94 1109.25 2831.94 1038.71 2775.3 979.931 2704.76 979.931Z" fill="#FFFFFF" stroke="#222222" strokeWidth="18"/>
+            <path d="M2108.35 1106.52C2113.03 1073.22 2162.79 1048.45 2219.48 1051.2 2272.89 1053.8 2314 1080.02 2314 1111.5" stroke="#000000" strokeWidth="66.4583" strokeLinecap="round" strokeMiterlimit="8" fill="none"/>
+            <path d="M2439.35 1106.5C2444.08 1073.2 2494.09 1048.44 2551.06 1051.21 2604.72 1053.81 2646 1080.03 2646 1111.5" stroke="#000000" strokeWidth="66.4583" strokeLinecap="round" strokeMiterlimit="8" fill="none"/>
+          </svg>
+          <span className="text-xs font-medium">Matt Yu</span>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </a>
       </div>
 
       {/* Charts */}
@@ -366,22 +383,6 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
             ))}
           </div>
         )}
-        {/* Footer */}
-        <footer className="mt-10 pt-6 border-t border-gray-100 flex items-center justify-center">
-        <a
-          href="https://mattryanyu.github.io/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 hover:opacity-70 transition-opacity"
-        >
-          <svg width="20" height="20" viewBox="1869 468 1026 1026" xmlns="http://www.w3.org/2000/svg" overflow="hidden">
-            <path d="M2704.76 979.931C2701.56 979.931 2697.28 979.931 2694.07 979.931 2694.07 979.931 2694.07 979.931 2694.07 979.931 2694.07 927.562 2668.43 879.469 2626.74 849.544 2583.99 819.619 2529.49 812.137 2480.33 829.237 2439.71 750.15 2349.94 709.537 2264.44 729.844 2178.94 750.15 2116.95 827.1 2116.95 915.806 2116.95 915.806 2116.95 916.875 2116.95 917.944 2058.17 908.325 1999.39 932.906 1963.05 979.931 1927.78 1028.02 1921.37 1091.08 1945.95 1144.52 1971.6 1197.96 2025.04 1233.22 2083.82 1236.43L2083.82 1237.5 2703.69 1237.5C2774.23 1237.5 2831.94 1179.79 2831.94 1109.25 2831.94 1038.71 2775.3 979.931 2704.76 979.931Z" fill="#FFFFFF" stroke="#222222" strokeWidth="18"/>
-            <path d="M2108.35 1106.52C2113.03 1073.22 2162.79 1048.45 2219.48 1051.2 2272.89 1053.8 2314 1080.02 2314 1111.5" stroke="#000000" strokeWidth="66.4583" strokeLinecap="round" strokeMiterlimit="8" fill="none"/>
-            <path d="M2439.35 1106.5C2444.08 1073.2 2494.09 1048.44 2551.06 1051.21 2604.72 1053.81 2646 1080.03 2646 1111.5" stroke="#000000" strokeWidth="66.4583" strokeLinecap="round" strokeMiterlimit="8" fill="none"/>
-          </svg>
-          <span className="text-sm text-gray-600">Matt Yu</span>
-        </a>
-        </footer>
       </div>
 
       {/* Delete chart modal */}
