@@ -125,7 +125,7 @@ export function LandingScreen({ onOpen, onCreate }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-[100dvh] bg-white flex flex-col pb-[env(safe-area-inset-bottom)]">
 
       {/* Navbar */}
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
